@@ -5,6 +5,8 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -59,7 +61,7 @@ public class HotKeyEventBus implements NativeKeyListener {
      * A Set is used to ensure Hotkeys added are unique.
      * </p>
      */
-    private Set< Hotkey > hotkeys;
+    private Set< Hotkey > hotkeySet;
 
     /**
      * The index of the first key modifier in the expression array.
@@ -103,9 +105,9 @@ public class HotKeyEventBus implements NativeKeyListener {
     /**
      * Creates a HotKeyEventBus with no HotKeys.
      */
-    @SuppressWarnings ( "unused" )
+    @SuppressWarnings( "unused" )
     public HotKeyEventBus ( ) {
-        this ( Collections.emptySet ( ) );
+        this ( new HashSet<> (  ) );
     }
 
     /**
@@ -117,7 +119,7 @@ public class HotKeyEventBus implements NativeKeyListener {
      * </p>
      */
     public HotKeyEventBus ( boolean debug ) {
-        this ( Collections.emptySet ( ) , debug );
+        this ( new HashSet<> (  ) , debug );
     }
 
     /**
@@ -131,7 +133,7 @@ public class HotKeyEventBus implements NativeKeyListener {
      * Creates a HotKeyEventBus with a list of valid HotKeys.
      */
     private HotKeyEventBus ( final Set< Hotkey > hotkeys , boolean debug ) {
-        this.hotkeys = hotkeys;
+        this.hotkeySet = hotkeys;
         listenerSet = new HashSet<> ( );
         listenerMap = new HashMap<> ( );
         this.debug = debug;
@@ -223,7 +225,7 @@ public class HotKeyEventBus implements NativeKeyListener {
      * Sets the HotKeyEventBus to stop processing input events.
      * </p>
      */
-    @SuppressWarnings ( "unused" )
+    @SuppressWarnings( "unused" )
     public void setPaused ( boolean paused ) {
         this.paused = paused;
 
@@ -243,9 +245,9 @@ public class HotKeyEventBus implements NativeKeyListener {
      * are attached to the HotkeyEventBus.
      * </p>
      */
-    @SuppressWarnings ( "unused" )
+    @SuppressWarnings( "unused" )
     public void registerHotkeys ( final Set< Hotkey > hotkeys ) {
-        this.hotkeys = hotkeys;
+        this.hotkeySet = hotkeys;
         log.info ( "Provided Hotkeys Set was set to the HotKeyEventBus." );
     }
 
@@ -258,9 +260,9 @@ public class HotKeyEventBus implements NativeKeyListener {
      * are attached to the HotkeyEventBus.
      * </p>
      */
-    @SuppressWarnings ( "unused" )
+    @SuppressWarnings( "unused" )
     public void registerHotkey ( final Hotkey hotkey ) {
-        boolean changed = hotkeys.add ( hotkey );
+        boolean changed = hotkeySet.add ( hotkey );
 
         if ( changed ) {
             log.info ( "Provided Hotkey was added to the HotKeyEventBus Hotkey list." );
@@ -271,11 +273,22 @@ public class HotKeyEventBus implements NativeKeyListener {
 
     /**
      * <p>
+     *  Returns all registered Hotkeys, returning Hotkeys contained in the hotkeySet and
+     *  listenerMap.
+     * </p>
+     */
+    @SuppressWarnings ( "unused" )
+    public Set< Hotkey > getRegisteredHotkeys ( ) {
+        return Stream.of ( hotkeySet , listenerMap.keySet ()).flatMap ( Set::stream ).collect( Collectors.toSet());
+    }
+
+    /**
+     * <p>
      * Registers the provided Hotkey to the provided HotKeyListener, so whenever the Hotkey
      * is pressed, ONLY the provided listener will be called.
      * </p>
      */
-    @SuppressWarnings ( "unused" )
+    @SuppressWarnings( "unused" )
     public void registerHotkeyWithListener ( final Hotkey hotkey , HotKeyListener listener ) {
         listenerMap.put ( hotkey , listener );
     }
@@ -283,9 +296,9 @@ public class HotKeyEventBus implements NativeKeyListener {
     /**
      * Removes the provided Hotkey from the HotKeyEventBus.
      */
-    @SuppressWarnings ( "unused" )
+    @SuppressWarnings( "unused" )
     public void removeHotKey ( final Hotkey hotkey ) {
-        boolean contained = hotkeys.remove ( hotkey );
+        boolean contained = hotkeySet.remove ( hotkey );
 
         if ( contained ) {
             log.info ( "HotKeyEventBus contained the provided Hotkey and was removed from the Hotkey list." );
@@ -298,7 +311,7 @@ public class HotKeyEventBus implements NativeKeyListener {
      * Removes the provided Hotkey and its corresponding HotkeyListener from
      * the HotkeyEventBus.
      */
-    @SuppressWarnings ( "unused" )
+    @SuppressWarnings( "unused" )
     public void removeHotkeyWithListener ( final Hotkey hotkey ) {
         listenerMap.remove ( hotkey );
     }
@@ -306,7 +319,7 @@ public class HotKeyEventBus implements NativeKeyListener {
     /**
      * Adds the provided HotKeyListener to the HotKeyEventBus.
      */
-    @SuppressWarnings ( "unused" )
+    @SuppressWarnings( "unused" )
     public void addHotKeyListener ( HotKeyListener listener ) {
         boolean contained = listenerSet.add ( listener );
 
@@ -322,7 +335,7 @@ public class HotKeyEventBus implements NativeKeyListener {
      * Removes the provided HotkeyListener from the HotkeyEventBus.
      * </p>
      */
-    @SuppressWarnings ( "unused" )
+    @SuppressWarnings( "unused" )
     public void removeHotKeyListener ( final HotKeyListener listener ) {
         boolean contained = listenerSet.remove ( listener );
 
@@ -346,7 +359,7 @@ public class HotKeyEventBus implements NativeKeyListener {
     private void checkExpression ( ) {
         debug ( "Checking for matching Hotkey for expression: " + Hotkey.buildStringRepresentation ( expression ) + "." );
 
-        for ( Hotkey key : hotkeys ) {
+        for ( Hotkey key : hotkeySet ) {
             if ( key.matchesKeyExpression ( expression ) ) {
                 debug ( "Matching Hotkey was determined. Notifying attached listeners of the event." );
 

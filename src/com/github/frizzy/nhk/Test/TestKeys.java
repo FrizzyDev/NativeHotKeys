@@ -1,6 +1,7 @@
 package com.github.frizzy.nhk.Test;
 
 import com.github.frizzy.nhk.HotKey.HotKeyEventBus;
+import com.github.frizzy.nhk.HotKey.Hotkey;
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 
@@ -12,6 +13,8 @@ public class TestKeys {
 
     private TestKeys ( ) {
         HotKeyEventBus bus = new HotKeyEventBus ( true );
+        Hotkey hotkey = new Hotkey ( "open-window", 29, 56, 24 );
+        System.out.println ( hotkey.toJSON () );
 
         GlobalScreen.addNativeKeyListener ( bus );
         try {

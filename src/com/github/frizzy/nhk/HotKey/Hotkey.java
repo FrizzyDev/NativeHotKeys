@@ -5,7 +5,7 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import java.util.Objects;
 
 /**
- * A Hotkey represents a key expression that can pressed by the user to
+ * A Hotkey represents a key expression that can be pressed by the user to
  * quickly activate a process or window in an application, from anywhere
  * within the system.
  *
@@ -16,8 +16,13 @@ import java.util.Objects;
 public class Hotkey implements Comparable< Hotkey > {
 
     /**
+     * <p>
      * The ID of the process that should be started when
      * this HotKey is dispatched.
+     * </p>
+     * <p>
+     * This is essentially the name for the Hotkey.
+     * </p>
      */
     private final String commandID;
 
@@ -57,24 +62,7 @@ public class Hotkey implements Comparable< Hotkey > {
         this.mod1 = mod1;
         this.mod2 = mod2;
         this.key = key;
-
-        StringBuilder builder = new StringBuilder ( );
-
-        if ( mod1 != -1 ) {
-            builder.append ( NativeKeyEvent.getKeyText ( mod1 ) ).append ( " + " );
-        }
-
-        if ( mod2 != -1 ) {
-            builder.append ( NativeKeyEvent.getKeyText ( mod2 ) ).append ( " + " );
-        }
-
-        if ( key != -1 ) {
-            builder.append ( NativeKeyEvent.getKeyText ( key ) );
-        } else {
-            builder.append ( "Unknown key code. Please rebind your hotkey for this command: " ).append ( commandID );
-        }
-
-        expressionText = builder.toString ( );
+        expressionText = buildStringRepresentation ( new int[] { mod1, mod2, key} );
     }
 
     /**
@@ -145,6 +133,19 @@ public class Hotkey implements Comparable< Hotkey > {
     @SuppressWarnings ( "unused" )
     public int getKey ( ) {
         return key;
+    }
+
+    /**
+     * Converts the Hotkey into a String of valid JSON for export to a
+     * .JSON file.
+     */
+    public String toJSON ( ) {
+        return "{" + "\"commandID\": \"" + commandID + "\", " +
+                "\"firstModifier\": " + mod1 + ", " +
+                "\"secondModifier\": " + mod2 + ", " +
+                "\"keyCode\": " + key + ", " +
+                "\"text\": " + expressionText +
+                "}";
     }
 
     /**
